@@ -1,0 +1,39 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install wasm32-unknown-unknown target
+      run: rustup target add wasm32-unknown-unknown
+    - name: Install trunk
+      run: |
+        mkdir trunk
+        curl -sSL https://github.com/thedodd/trunk/releases/download/v0.21.1/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=./trunk
+        echo `pwd`/trunk >> $GITHUB_PATH
+    - name: Build with Trunk
+      run: trunk build --release --public-url "https://mystor.github.io/diff.rs/"
+    - name: "Upload built tree"
+      uses: actions/upload-artifact@v4
+      with:
+        name: artifacts-build-release
+        path: dist
+    - name: Deploy GitHub Pages
+      run: |
+        trunk build --release --public-url "https://mystor.github.io/diff.rs/"
+        git worktree add gh-pages gh-pages
+        git config user.name "Deploy from CI"
+        git config user.email ""
+        cd gh-pages
+        # Delete the ref to avoid keeping history.
+        git update-ref -d refs/heads/gh-pages
+        rm -rf *
+        mv ../dist/* .
+        git add .
+        git commit -m "Deploy $GITHUB_SHA to gh-pages"
+        git push --force

@@ -1,0 +1,7 @@
+# rust build artifacts
+/target
+
+# trunk build artifacts
+/dist
+
+.idea/
