@@ -223,8 +223,8 @@ impl Route {
 #[function_component]
 pub fn App() -> Html {
     html! {
-        <BrowserRouter>
+        <HashRouter>
             <Switch<Route> render={Route::render} />
-        </BrowserRouter>
+        </HashRouter>
     }
 }
